@@ -12,7 +12,7 @@ function makeProductsArray () {
 				product["category_name"] = categories[i].name;
 				product["category_discount"] = categories[i].discount;
 				product["category_season_discount"] = categories[i].season_discount;
-				product["season_price"] = product.price - (product.price * categories[i].discount);
+				product["season_price"] = (product.price - (product.price * categories[i].discount)).toFixed(2);
 			}
 		}
 	});
@@ -20,6 +20,7 @@ function makeProductsArray () {
 }
 
 function makeDom (discountSeason) {
+	productString = ""; 
 
 	for (var i=0; i<products.length; i++) {
 		productString += `<div class="col-sm-4 col-md-2">`;
@@ -29,15 +30,18 @@ function makeDom (discountSeason) {
 		productString += `</div>`;
 
 		if (discountSeason === products[i].category_season_discount) {
-			productString += `<p>${products[i].season_price}</p>`;
+			productString += `<p>Seasonal Price: ${products[i].season_price}</p>`;
 		} else {
-			productString += `<p>${products[i].price}</p>`;
+			productString += `<p>Price: ${products[i].price}</p>`;
 		}
 		productString += `</div></div>`;	
 		infoContainer.innerHTML = productString;		
 	}
 }
-	
+
+dropdownMenu.addEventListener("change", function(event){
+		makeDom(dropdownMenu.options[dropdownMenu.selectedIndex].value);
+});
 
 
 function executeThisCodeAfterFileLoadProducts () {
