@@ -1,53 +1,69 @@
 var infoContainer = document.getElementById("info-container");
 var dropdownMenu = document.getElementById("dropdown");
+var categories = [];
+var products = [];
 var productString = "";
 
 
+function makeProductsArray () {
+	products.forEach (function(product) {
+		for (var i=0; i<categories.length; i++) {
+			if (product.category_id === categories[i].id) {
+				product["category_name"] = categories[i].name;
+				product["category_discount"] = categories[i].discount;
+				product["category_season_discount"] = categories[i].season_discount;
+				product["season_price"] = product.price - (product.price * categories[i].discount);
+			}
+		}
+	});
+	makeDom();
+}
 
-function makeDom (data, categoriesProductsData) {
-	var currentProduct;
+function makeDom (discountSeason) {
 
-	if (categoriesProductsData === "products")
-
-	for (var i=0; i<data[categoriesProductsData].length; i++) {
-		currentProduct = data[categoriesProductsData][i];
+	for (var i=0; i<products.length; i++) {
 		productString += `<div class="col-sm-4 col-md-2">`;
 		productString += `<div class="panel panel-default">`;
 		productString += `<div class="panel-heading"`;
-		productString += `<h3>${currentProduct.name}</h3>`;
-		productString += `</div>`;		
-		productString += `<strong>${currentProduct.price}</strong>`;
+		productString += `<strong>${products[i].category_name}</strong> <h4>${products[i].name}</h4>`;
+		productString += `</div>`;
+
+		if (discountSeason === products[i].category_season_discount) {
+			productString += `<p>${products[i].season_price}</p>`;
+		} else {
+			productString += `<p>${products[i].price}</p>`;
+		}
 		productString += `</div></div>`;	
-		}	
-	
-	infoContainer.innerHTML = productString;
+		infoContainer.innerHTML = productString;		
 	}
-		
+}
+	
 
 
+function executeThisCodeAfterFileLoadProducts () {
+	products = JSON.parse(this.responseText).products;
+	secondXhr();
+}
 
-function executeThisCodeAfterFileLoadCategoriesProducts () {
-	var data = JSON.parse(this.responseText);
-	// for (variable in object)
-	for (key in data) {
-		var categoriesProductsData = key;
-		makeDom(data, categoriesProductsData);	
-	} 
+function executeThisCodeAfterFileLoadCategories () {
+	categories = JSON.parse(this.responseText).categories;
+	makeProductsArray();
 }
 
 function executeThisCodeAfterFileFail () {
 	console.log("failureeee!");
 }
 
-
 var myProductsRequest = new XMLHttpRequest();
-myProductsRequest.addEventListener("load", executeThisCodeAfterFileLoadCategoriesProducts);
+myProductsRequest.addEventListener("load", executeThisCodeAfterFileLoadProducts);
 myProductsRequest.addEventListener("error", executeThisCodeAfterFileFail);
 myProductsRequest.open("GET", "products.json");
 myProductsRequest.send();
 
-var myCategoriesRequest = new XMLHttpRequest();
-myCategoriesRequest.addEventListener("load", executeThisCodeAfterFileLoadCategoriesProducts);
-myCategoriesRequest.addEventListener("error", executeThisCodeAfterFileFail);
-myCategoriesRequest.open("GET", "categories.json");
-myCategoriesRequest.send();
+function secondXhr () {
+	var myCategoriesRequest = new XMLHttpRequest();
+	myCategoriesRequest.addEventListener("load", executeThisCodeAfterFileLoadCategories);
+	myCategoriesRequest.addEventListener("error", executeThisCodeAfterFileFail);
+	myCategoriesRequest.open("GET", "categories.json");
+	myCategoriesRequest.send();
+}
